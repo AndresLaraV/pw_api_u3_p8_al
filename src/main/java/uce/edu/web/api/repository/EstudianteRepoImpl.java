@@ -8,7 +8,7 @@ import uce.edu.web.api.repository.modelo.Estudiante;
 
 @Transactional
 @ApplicationScoped
-public class EstudianteImpl implements IEstudianteRepo {
+public class EstudianteRepoImpl implements IEstudianteRepo {
 
     @PersistenceContext
     private EntityManager entityManager;
