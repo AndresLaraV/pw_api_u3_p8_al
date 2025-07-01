@@ -1,10 +1,7 @@
 package uce.edu.web.api.controller;
 
 import java.util.List;
-
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.hibernate.annotations.GeneratorType;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -51,17 +48,20 @@ public class EstudianteController {
     @Path("/{id}")
     public void actualizarParcialPorId(@RequestBody Estudiante estudiante, @PathParam("id") Integer id) {
         estudiante.setId(id);
-        Estudiante existente = this.estudianteService.buscarPorId(id);
-        if (existente.getNombre() != null) {
-            existente.setNombre(estudiante.getNombre());
+        Estudiante e = this.estudianteService.buscarPorId(id);
+        if (e.getNombre() != null) {
+            e.setNombre(estudiante.getNombre());
         }
-        if (existente.getApellido() != null) {
-            existente.setApellido(estudiante.getApellido());
+        if (e.getApellido() != null) {
+            e.setApellido(estudiante.getApellido());
         }
-        if (existente.getFechaNacimiento() != null) {
-            existente.setFechaNacimiento(estudiante.getFechaNacimiento());
+        if (e.getFechaNacimiento() != null) {
+            e.setFechaNacimiento(estudiante.getFechaNacimiento());
         }
-        this.estudianteService.actualizarParcialPorId(existente);
+        if (e.getCedula() != null) {
+            e.setCedula(estudiante.getCedula());
+        }
+        this.estudianteService.actualizarParcialPorId(e);
     }
 
     @DELETE

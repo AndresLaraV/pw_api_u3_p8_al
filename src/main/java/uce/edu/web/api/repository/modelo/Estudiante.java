@@ -1,7 +1,6 @@
 package uce.edu.web.api.repository.modelo;
 
 import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -17,6 +16,8 @@ public class Estudiante {
     private String apellido;
     @Column(name = "estu_fecha_nacimiento")
     private LocalDateTime fechaNacimiento;
+    @Column(name = "estu_cedula")
+    private String cedula;
 
     //SET Y GET
     public Integer getId() {
@@ -51,4 +52,12 @@ public class Estudiante {
         this.fechaNacimiento = fechaNacimiento;
     }
 
+    public String getCedula() {
+        return cedula;
+    }
+
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
+    }
+    
 }

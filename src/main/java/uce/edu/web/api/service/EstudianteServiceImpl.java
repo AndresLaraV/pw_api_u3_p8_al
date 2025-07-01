@@ -2,9 +2,7 @@ package uce.edu.web.api.service;
 
 import uce.edu.web.api.repository.modelo.Estudiante;
 import uce.edu.web.api.repository.IEstudianteRepo;
-
 import java.util.List;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -19,7 +17,6 @@ public class EstudianteServiceImpl implements IEstudianteService {
         return this.estudianteRepo.seleccionarPorId(id);
 
     }
-
     @Override
     public List<Estudiante> buscarTodos() {
         return this.estudianteRepo.seleccionarTodos();
@@ -42,7 +39,7 @@ public class EstudianteServiceImpl implements IEstudianteService {
 
     @Override
     public void guardar(Estudiante estudiante) {
-
+        this.estudianteRepo.insertar(estudiante);
     }
 
 }
