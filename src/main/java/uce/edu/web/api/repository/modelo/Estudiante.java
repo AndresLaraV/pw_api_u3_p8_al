@@ -18,6 +18,8 @@ public class Estudiante {
     private LocalDateTime fechaNacimiento;
     @Column(name = "estu_cedula")
     private String cedula;
+    @Column(name = "estu_genero")
+    private String genero;
 
     //SET Y GET
     public Integer getId() {
@@ -58,6 +60,14 @@ public class Estudiante {
 
     public void setCedula(String cedula) {
         this.cedula = cedula;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
     }
     
 }
