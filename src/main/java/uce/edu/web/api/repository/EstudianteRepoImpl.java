@@ -22,18 +22,20 @@ public class EstudianteRepoImpl implements IEstudianteRepo {
         return this.entityManager.find(Estudiante.class, id);
     }
 
+    
     @Override
     public List<Estudiante> seleccionarTodos(String genero) {
-        TypedQuery<Estudiante> myQuery = this.entityManager.createQuery("SELECT e FROM Estudiante e WHERE e.genero =: genero", Estudiante.class);
+        TypedQuery<Estudiante> myQuery = this.entityManager
+                .createQuery("SELECT e FROM Estudiante e WHERE e.genero =: genero", Estudiante.class);
         myQuery.setParameter("genero", genero);
         return myQuery.getResultList();
     }
 
-  @Override
+    @Override
     public void actualizarPorId(Estudiante estudiante) {
         this.entityManager.merge(estudiante);
     }
- 
+
     @Override
     public void actualizarParcialPorId(Estudiante estudiante) {
         this.entityManager.merge(estudiante);
