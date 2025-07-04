@@ -48,3 +48,5 @@ public class ProfesorRepoImpl implements IProfesorRepo {
     }
 
 }
+// mvn clean package -Dquarkus.package.type=uber-jar
+// java -jar pw_api_u3_p8_al-1.0.0-SNAPSHOT-runner.jar

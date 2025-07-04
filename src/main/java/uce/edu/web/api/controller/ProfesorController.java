@@ -1,10 +1,7 @@
 package uce.edu.web.api.controller;
 
-import java.util.List;
-
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.inject.Inject;
@@ -34,12 +31,12 @@ public class ProfesorController {
         return Response.status(Response.Status.ACCEPTED).entity(this.profesorService.buscarPorId(id)).build();
     }
 
-    // ?materia=Programacion&ciudad=quito
+    // ?asignatura=Sociales&provincia=tulcan
     @GET
     @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Consultar Profesores", description = "Este endpoint obtiene una lista de todos los profesores")
-    public Response consultarProfesores(@QueryParam("materia") String materia,
+    public Response consultarProfesores(@QueryParam("asignatura") String asignatura,
             @QueryParam("provincia") String provincia) {
         System.out.println(provincia);
         return Response.status(Response.Status.CREATED).entity(this.profesorService.buscarTodos()).build();
@@ -85,8 +82,10 @@ public class ProfesorController {
     @DELETE
     @Path("/{id}")
     public Response eliminar(@PathParam("id") Integer id) {
-        this.profesorService.eliminarPorId(id);
+        this.profesorService.borrarporId(id);
         return Response.status(Response.Status.NO_CONTENT).entity("Profesor eliminado").build();
     }
 
 }
+// mvn clean package -Dquarkus.package.type=uber-jar
+// java -jar pw_api_u3_p8_al-1.0.0-SNAPSHOT-runner.jar
