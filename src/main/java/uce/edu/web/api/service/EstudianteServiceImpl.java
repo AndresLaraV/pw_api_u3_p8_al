@@ -20,7 +20,7 @@ public class EstudianteServiceImpl implements IEstudianteService {
         EstudianteTo e = new EstudianteTo(e1.getId(), e1.getNombre(), e1.getApellido(), e1.getFechaNacimiento(),
                 e1.getCedula(), e1.getGenero(), uriInfo);
         return e;
-
+        
     }
 
     @Override

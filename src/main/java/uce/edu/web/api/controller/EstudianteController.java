@@ -9,7 +9,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
+//import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -35,7 +35,7 @@ public class EstudianteController {
     @Produces(MediaType.APPLICATION_JSON)
 
     public Response consultarPorId(@PathParam("id") Integer id, @Context UriInfo uriInfo) {
-        EstudianteTo estu = this.estudianteService.buscarPorId(id, null);
+        EstudianteTo estu = this.estudianteService.buscarPorId(id, uriInfo);
         return Response.status(227)
                 .entity(estu)
                 .build();
@@ -57,15 +57,17 @@ public class EstudianteController {
     @POST
     @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void guardar(@RequestBody Estudiante estudiante) {
-        this.estudianteService.guardar(estudiante);
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response guardar(@RequestBody Estudiante estudiante) {
+        estudianteService.guardar(estudiante);
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @PUT
     @Path("/{id}")
     @Consumes
     public Response actualizarPorId(@RequestBody Estudiante estudiante, @PathParam("id") Integer id) {
-        return Response.status(Response.Status.NO_CONTENT).build();
+        return Response.status(Response.Status.OK).build();
     }
 
     // @PATCH
@@ -108,13 +110,15 @@ public class EstudianteController {
     }
 
     @GET
-    @Path("/{id}/hijos") // path autodescriptivo
-    public List<Hijo> obtenerHijosPorId(@PathParam("id") Integer id) {
-        Hijo h1 = new Hijo();
-        h1.setNombre("Pepito");
+    @Path("/{id}/hijos")
+    public List<Hijo> obtenerHijosPorId(@PathParam("id") Integer id){
 
+        Hijo h1 = new Hijo();
         Hijo h2 = new Hijo();
+        h1.setNombre("Pedrito");
         h2.setNombre("Juanito");
+        h1.setApellido("Palotes");
+        h2.setApellido("Perez");
 
         List<Hijo> hijos = new ArrayList<>();
         hijos.add(h1);
@@ -125,3 +129,4 @@ public class EstudianteController {
 }
 // mvn clean package -Dquarkus.package.type=uber-jar
 // java -jar pw_api_u3_p8_al-1.0.0-SNAPSHOT-runner.jar
+// http://localhost:8081/api/matricula/v1/estudiantes
