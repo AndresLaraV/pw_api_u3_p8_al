@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
 import jakarta.ws.rs.core.UriInfo;
 import uce.edu.web.api.controller.EstudianteController;
 
@@ -18,19 +19,14 @@ public class EstudianteTo {
     // links de hijos
     public Map<String, String> _links = new HashMap<>();
 
-    public EstudianteTo(Integer id, String nombre, String apellido, LocalDateTime fechaNacimiento, String cedula,
-            String genero, UriInfo uriInfo) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.fechaNacimiento = fechaNacimiento;
-        this.cedula = cedula;
-        this.genero = genero;
+    public void set_links(Map<String, String> _links) {
+        this._links = _links;
+    }
 
+    public void buildURI(UriInfo uriInfo) {
         URI todosHijos = uriInfo.getBaseUriBuilder().path(EstudianteController.class)
                 .path(EstudianteController.class, "obtenerHijosPorId").build(id);
         _links.put("hijos", todosHijos.toString());
-        
     }
 
     // SET Y GET
