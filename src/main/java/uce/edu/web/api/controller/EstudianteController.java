@@ -1,10 +1,10 @@
 package uce.edu.web.api.controller;
 
+import java.net.URI;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.PATCH;
 import uce.edu.web.api.repository.modelo.Estudiante;
 import uce.edu.web.api.repository.modelo.Hijo;
 import uce.edu.web.api.service.IEstudianteService;
@@ -34,89 +35,175 @@ public class EstudianteController {
     @Inject
     private IHijoService hijoService;
 
+    // GET /estudiantes/{id}
     @GET
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-
+    @Operation(summary = "Consultar estudiante por ID", description = "Endpoint para consultar un estudiante por su ID.")
     public Response consultarPorId(@PathParam("id") Integer id, @Context UriInfo uriInfo) {
-        EstudianteTo estu = EstudianteMapper.toTo(this.estudianteService.buscarPorId(id));
-        estu.buildURI(uriInfo);
+        Estudiante estudiante = this.estudianteService.buscarPorId(id);
+        if (estudiante == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Estudiante con ID " + id + " no encontrado.")
+                    .build();
+        }
+        EstudianteTo estuTo = EstudianteMapper.toTo(estudiante);
+        estuTo.buildURI(uriInfo);
         return Response.status(Response.Status.OK)
-                .entity(estu)
+                .entity(estuTo)
                 .build();
     }
 
-    // ?genero=F&provincia=pichincha
+    // GET /estudiantes
     @GET
     @Path("")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Consultar todos los estudiantes", description = "Enpoint para consultar todos los estudiantes registrados")
+    @Operation(summary = "Consultar todos los estudiantes", description = "Endpoint para consultar todos los estudiantes registrados. Permite filtrar por género.")
     public Response consultarTodos(@QueryParam("genero") String genero,
-            @QueryParam("provincia") String provincia) {
-        System.out.println(provincia);
+            @QueryParam("provincia") String provincia, @Context UriInfo uriInfo) {
+        System.out.println("Filtrando por genero: " + genero + " y provincia (no usada): " + provincia);
+
+        List<Estudiante> estudiantes = this.estudianteService.buscarTodos(genero);
+
+        List<EstudianteTo> estudiantesTo = estudiantes.stream()
+                .map(e -> {
+                    EstudianteTo eto = EstudianteMapper.toTo(e);
+                    eto.buildURI(uriInfo);
+                    return eto;
+                })
+                .collect(Collectors.toList());
+
         return Response.status(Response.Status.OK)
-                .entity(this.estudianteService.buscarTodos(genero))
+                .entity(estudiantesTo)
                 .build();
     }
 
+    // POST /estudiantes
     @POST
     @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void guardar(@RequestBody Estudiante estudiante) {
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Crear un nuevo estudiante", description = "Endpoint para registrar un nuevo estudiante.")
+    public Response guardar(EstudianteTo estudianteTo, @Context UriInfo uriInfo) {
+        estudianteTo.setId(null);
+        Estudiante estudiante = EstudianteMapper.toEntity(estudianteTo);
         this.estudianteService.guardar(estudiante);
+
+        // Construir la URI del nuevo recurso creado
+        URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(estudiante.getId())).build();
+
+        EstudianteTo savedEstudianteTo = EstudianteMapper.toTo(estudiante);
+        savedEstudianteTo.buildURI(uriInfo); // Construir enlaces HATEOAS
+
+        return Response.created(location)
+                .entity(savedEstudianteTo)
+                .build();
     }
 
+    // PUT /estudiantes/{id}
     @PUT
     @Path("/{id}")
-    @Consumes
-    public Response actualizarPorId(@RequestBody Estudiante estudiante, @PathParam("id") Integer id) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Actualizar un estudiante por ID", description = "Endpoint para reemplazar completamente un estudiante existente por su ID.")
+    public Response actualizarPorId(EstudianteTo estudianteTo, @PathParam("id") Integer id) {
+        if (estudianteTo.getId() != null && !estudianteTo.getId().equals(id)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("El ID en la URL no coincide con el ID en el cuerpo de la solicitud.")
+                    .build();
+        }
+
+        estudianteTo.setId(id);
+        Estudiante estudiante = EstudianteMapper.toEntity(estudianteTo);
+
+        Estudiante estu = this.estudianteService.buscarPorId(id);
+        if (estu == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Estudiante con ID " + id + " no encontrado para actualizar.")
+                    .build();
+        }
+
+        this.estudianteService.actualizarPorId(estudiante);
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
-    // @PATCH
-    // @Path("/{id}")
-    // @Consumes(MediaType.APPLICATION_JSON)
-    // public Response actualizarParcialPorId(@RequestBody Estudiante estudiante,
-    // @PathParam("id") Integer id) {
-    // estudiante.setId(id);
-    // Estudiante e = this.estudianteService.buscarPorId(id);
-    // if (e == null) {
-    // return Response.status(Response.Status.NOT_FOUND)
-    // .entity("Estudiante no encontrado")
-    // .build();
-    // }
-    // if (estudiante.getNombre() != null) {
-    // e.setNombre(estudiante.getNombre());
-    // }
-    // if (estudiante.getApellido() != null) {
-    // e.setApellido(estudiante.getApellido());
-    // }
-    // if (estudiante.getFechaNacimiento() != null) {
-    // e.setFechaNacimiento(estudiante.getFechaNacimiento());
-    // }
-    // if (estudiante.getCedula() != null) {
-    // e.setCedula(estudiante.getCedula());
-    // }
-    // if (estudiante.getGenero() != null) {
-    // e.setGenero(estudiante.getGenero());
-    // }
-    // // Optionally, persist the changes here
-    // // this.estudianteService.actualizar(e);
-    // return Response.status(Response.Status.OK)
-    // .entity("Actualizacion parcial correcta")
-    // .build();
-    // }
+    @PATCH
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Actualizar parcialmente un estudiante por ID", description = "Endpoint para actualizar parcialmente los campos de un estudiante existente por su ID.")
+    public Response actualizarParcialPorId(EstudianteTo estudianteTo, @PathParam("id") Integer id) {
+        Estudiante estu = this.estudianteService.buscarPorId(id);
 
+        if (estu == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Estudiante con ID " + id + " no encontrado para actualizar parcialmente.")
+                    .build();
+        }
+
+        boolean seModificoAlMenosUnCampo = false;
+
+        if (estudianteTo.getNombre() != null) {
+            estu.setNombre(estudianteTo.getNombre());
+            seModificoAlMenosUnCampo = true;
+        }
+
+        if (estudianteTo.getApellido() != null) {
+            estu.setApellido(estudianteTo.getApellido());
+            seModificoAlMenosUnCampo = true;
+        }
+
+        if (estudianteTo.getFechaNacimiento() != null) {
+            estu.setFechaNacimiento(estudianteTo.getFechaNacimiento());
+            seModificoAlMenosUnCampo = true;
+        }
+
+        if (estudianteTo.getCedula() != null) {
+            estu.setCedula(estudianteTo.getCedula());
+            seModificoAlMenosUnCampo = true;
+        }
+
+        if (estudianteTo.getGenero() != null) {
+            estu.setGenero(estudianteTo.getGenero());
+            seModificoAlMenosUnCampo = true;
+        }
+
+        if (!seModificoAlMenosUnCampo) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Debe proporcionar al menos un campo para actualizar.")
+                    .build();
+        }
+
+        this.estudianteService.actualizarParcialPorId(estu);
+
+        EstudianteTo updatedEstudianteTo = EstudianteMapper.toTo(estu);
+        return Response.status(Response.Status.OK)
+                .entity(updatedEstudianteTo)
+                .build();
+    }
+
+    // DELETE /estudiantes/{id}
     @DELETE
     @Path("/{id}")
+    @Operation(summary = "Eliminar un estudiante por ID", description = "Endpoint para eliminar un estudiante existente por su ID.")
     public Response eliminar(@PathParam("id") Integer id) {
+        Estudiante estu = this.estudianteService.buscarPorId(id);
+        if (estu == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Estudiante con ID " + id + " no encontrado para eliminar.")
+                    .build();
+        }
+
+        this.estudianteService.borrarporID(id);
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     // http://.../estudiantes/1/hijos GET
     @GET
     @Path("/{id}/hijos")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Obtener hijos de un estudiante", description = "Endpoint para obtener la lista de hijos asociados a un estudiante por su ID.")
     public List<Hijo> obtenerHijosPorId(@PathParam("id") Integer id) {
         return this.hijoService.buscarPorEstudianteId(id);
     }

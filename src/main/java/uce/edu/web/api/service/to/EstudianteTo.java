@@ -5,9 +5,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import jakarta.ws.rs.core.UriInfo;
 import uce.edu.web.api.controller.EstudianteController;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EstudianteTo {
     private Integer id;
     private String nombre;
