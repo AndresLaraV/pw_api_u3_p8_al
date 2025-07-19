@@ -22,6 +22,9 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.PATCH;
 import uce.edu.web.api.repository.modelo.Estudiante;
 import uce.edu.web.api.repository.modelo.Hijo;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.jwt.ClaimValue;
+import org.eclipse.microprofile.jwt.Claim;
 import uce.edu.web.api.service.IEstudianteService;
 import uce.edu.web.api.service.IHijoService;
 import uce.edu.web.api.service.mapper.EstudianteMapper;
@@ -30,10 +33,17 @@ import uce.edu.web.api.service.to.EstudianteTo;
 @Path("/estudiantes")
 public class EstudianteController {
     @Inject
+    JsonWebToken jwt;
+    @Inject
+    @Claim("sub")
+    ClaimValue<String> subject;
+    @Inject
     private IEstudianteService estudianteService;
-
     @Inject
     private IHijoService hijoService;
+
+    public EstudianteController() {
+    }
 
     // GET /estudiantes/{id}
     @GET
@@ -85,7 +95,7 @@ public class EstudianteController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Crear un nuevo estudiante", description = "Endpoint para registrar un nuevo estudiante.")
-    public Response guardar(EstudianteTo estudianteTo, @Context UriInfo uriInfo) {
+    public Response guardar(@RequestBody EstudianteTo estudianteTo, @Context UriInfo uriInfo) {
         estudianteTo.setId(null);
         Estudiante estudiante = EstudianteMapper.toEntity(estudianteTo);
         this.estudianteService.guardar(estudiante);
@@ -107,7 +117,7 @@ public class EstudianteController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Actualizar un estudiante por ID", description = "Endpoint para reemplazar completamente un estudiante existente por su ID.")
-    public Response actualizarPorId(EstudianteTo estudianteTo, @PathParam("id") Integer id) {
+    public Response actualizarPorId(@RequestBody EstudianteTo estudianteTo, @PathParam("id") Integer id) {
         if (estudianteTo.getId() != null && !estudianteTo.getId().equals(id)) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("El ID en la URL no coincide con el ID en el cuerpo de la solicitud.")
@@ -133,7 +143,7 @@ public class EstudianteController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Actualizar parcialmente un estudiante por ID", description = "Endpoint para actualizar parcialmente los campos de un estudiante existente por su ID.")
-    public Response actualizarParcialPorId(EstudianteTo estudianteTo, @PathParam("id") Integer id) {
+    public Response actualizarParcialPorId(@RequestBody EstudianteTo estudianteTo, @PathParam("id") Integer id) {
         Estudiante estu = this.estudianteService.buscarPorId(id);
 
         if (estu == null) {
